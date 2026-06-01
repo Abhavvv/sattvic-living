@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FCFCFA; /* Warm White */
+  --foreground: #2D3E35; /* Deep Green-Charcoal */
+  --primary-sage: #8DAA91;
+  --primary-forest: #355E3B;
+  --secondary-cream: #F8F4EC;
+  --secondary-white: #FCFCFA;
+  --accent-gold: #D4AF37;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  --color-primary-sage: var(--primary-sage);
+  --color-primary-forest: var(--primary-forest);
+  --color-secondary-cream: var(--secondary-cream);
+  --color-secondary-white: var(--secondary-white);
+  --color-accent-gold: var(--accent-gold);
+
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background-color: var(--secondary-cream);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Universal Keyboard Accessibility Focus States */
+*:focus-visible {
+  outline: 2px solid var(--accent-gold) !important;
+  outline-offset: 3px !important;
+  border-radius: 4px;
+}
+
+/* Elegant scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--secondary-cream);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary-sage);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-forest);
+}
+
+/* Glassmorphism backgrounds for navbar, mega menu and modals */
+.glass-panel {
+  background: rgba(252, 252, 250, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(53, 94, 59, 0.08);
+}
+
+.glass-panel-dark {
+  background: rgba(53, 94, 59, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(53, 94, 59, 0.12);
+}
+
+.gold-glow {
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.08);
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%);
+}
+
+.sage-gradient {
+  background: linear-gradient(135deg, #8DAA91 0%, #355E3B 100%);
+}
+
+/* WCAG Contrast-Compliant Color Utilities (Ensuring dark text on light accents) */
+.badge-sage {
+  background-color: rgba(141, 170, 145, 0.22);
+  color: var(--primary-forest);
+  border: 1px solid rgba(53, 94, 59, 0.15);
+}
+
+.badge-gold {
+  background-color: rgba(212, 175, 55, 0.18);
+  color: var(--primary-forest);
+  border: 1px solid rgba(170, 124, 17, 0.2);
+}
+
+/* Editorial Serif Headline helpers */
+.serif-editorial {
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+/* Transition utility classes */
+.transition-organic {
+  transition: all 0.4s cubic-bezier(0.21, 0.47, 0.32, 0.98);
+}
