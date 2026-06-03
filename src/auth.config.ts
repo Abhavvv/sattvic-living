@@ -30,6 +30,26 @@ export const authConfig = {
 
       return true;
     },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+        token.phone = user.phone;
+        token.bio = user.bio;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as "USER" | "ADMIN";
+        session.user.phone = token.phone as string | null;
+        session.user.bio = token.bio as string | null;
+        if (token.name) session.user.name = token.name;
+        if (token.picture) session.user.image = token.picture;
+      }
+      return session;
+    },
   },
   providers: [], // Configured inside Node-compatible auth.ts to support db operations
 } satisfies NextAuthConfig;

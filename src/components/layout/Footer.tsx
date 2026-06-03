@@ -75,11 +75,11 @@ export default function Footer() {
             The Journey
           </h4>
           <nav className="flex flex-col gap-2.5 text-sm text-secondary-cream/75">
-            <Link href="/yoga" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
+            <Link href="/yoga-classes" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
               Yoga Practices
             </Link>
-            <Link href="/ayurveda" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
-              Ayurvedic Consultations
+            <Link href="/ayurveda-learning" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
+              Ayurveda Learning
             </Link>
             <Link href="/meals" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
               Sattvic Kitchen & Nutrition
@@ -92,14 +92,17 @@ export default function Footer() {
             Sanctuary Resources
           </h4>
           <nav className="flex flex-col gap-2.5 text-sm text-secondary-cream/75">
-            <Link href="/library" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
+            <Link href="/online-books" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
               Sacred Book Library
+            </Link>
+            <Link href="/articles" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
+              Vedic Articles
+            </Link>
+            <Link href="/faq" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
+              Frequently Asked Questions
             </Link>
             <Link href="/about" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
               Our Core Philosophy
-            </Link>
-            <Link href="/contact" className="hover:text-accent-gold hover:translate-x-1 transition-all duration-200">
-              Schedule Consultation
             </Link>
           </nav>
         </div>

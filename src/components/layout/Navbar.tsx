@@ -43,11 +43,14 @@ export default function Navbar() {
           { href: "/settings", label: "Settings" },
         ]
       : []),
-    { href: "/yoga", label: "Yoga" },
-    { href: "/ayurveda", label: "Ayurveda" },
-    { href: "/library", label: "Library" },
+    { href: "/yoga-classes", label: "Yoga Classes" },
+    { href: "/instructors", label: "Instructors" },
+    { href: "/ayurveda-learning", label: "Ayurveda" },
+    { href: "/online-books", label: "Library" },
+    { href: "/articles", label: "Articles" },
     { href: "/meals", label: "Meals" },
     { href: "/about", label: "About" },
+    { href: "/faq", label: "FAQ" },
     { href: "/contact", label: "Contact" },
   ];
 
@@ -85,7 +88,7 @@ export default function Navbar() {
             >
               <button
                 className={`flex items-center gap-1 font-medium text-sm transition-colors py-2 focus:outline-none ${
-                  megaMenuOpen || ["/yoga", "/ayurveda", "/meals"].some((p) => pathname === p)
+                  megaMenuOpen || ["/yoga-classes", "/instructors", "/ayurveda-learning", "/meals"].some((p) => pathname.startsWith(p))
                     ? "text-primary-forest"
                     : "text-foreground/80 hover:text-primary-forest"
                 }`}
@@ -113,12 +116,20 @@ export default function Navbar() {
                       <p className="text-xs text-foreground/75 mb-2 leading-relaxed">
                         Flow in mindfulness. Rejuvenate structural balance & sacred pranayama.
                       </p>
-                      <Link
-                        href="/yoga"
-                        className="text-xs font-semibold text-accent-gold hover:text-primary-forest flex items-center gap-1 transition-colors mt-auto"
-                      >
-                        Explore Classes &rarr;
-                      </Link>
+                      <div className="flex flex-col gap-1.5 mt-auto">
+                        <Link
+                          href="/yoga-classes"
+                          className="text-xs font-semibold text-accent-gold hover:text-primary-forest flex items-center gap-1 transition-colors"
+                        >
+                          Explore Classes &rarr;
+                        </Link>
+                        <Link
+                          href="/instructors"
+                          className="text-xs font-semibold text-accent-gold hover:text-primary-forest flex items-center gap-1 transition-colors"
+                        >
+                          Meet Guides &rarr;
+                        </Link>
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -130,7 +141,7 @@ export default function Navbar() {
                         Discover your unique metabolic constitution. Balance doshas and habits.
                       </p>
                       <Link
-                        href="/ayurveda"
+                        href="/ayurveda-learning"
                         className="text-xs font-semibold text-accent-gold hover:text-primary-forest flex items-center gap-1 transition-colors mt-auto"
                       >
                         Read Guides &rarr;
@@ -158,7 +169,7 @@ export default function Navbar() {
             </div>
 
             {/* Static Nav Links */}
-            {navLinks.filter(link => !["Yoga", "Ayurveda", "Meals"].includes(link.label)).map((link) => {
+            {navLinks.filter(link => !["Yoga Classes", "Instructors", "Ayurveda", "Meals"].includes(link.label)).map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
@@ -214,7 +225,7 @@ export default function Navbar() {
                   Sign In
                 </Link>
                 <Link
-                  href="/yoga"
+                  href="/yoga-classes"
                   className="text-xs font-bold uppercase tracking-widest text-[#FCFCFA] px-5 py-2.5 rounded-full bg-primary-forest hover:bg-primary-sage transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
                 >
                   Begin Journey

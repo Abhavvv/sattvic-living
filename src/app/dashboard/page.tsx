@@ -173,7 +173,7 @@ export default async function DashboardPage() {
                     No active yoga course bookings found.
                   </div>
                   <Link
-                    href="/yoga"
+                    href="/yoga-classes"
                     className="text-xs font-bold uppercase tracking-widest text-primary-forest hover:text-accent-gold transition-colors flex items-center gap-1.5 group"
                   >
                     Explore Yoga Classes
@@ -233,7 +233,7 @@ export default async function DashboardPage() {
                     Your reading list is currently empty.
                   </div>
                   <Link
-                    href="/ayurveda"
+                    href="/ayurveda-learning"
                     className="text-xs font-bold uppercase tracking-widest text-primary-forest hover:text-accent-gold transition-colors flex items-center gap-1.5 group"
                   >
                     Read Ayurveda Guides
@@ -263,7 +263,7 @@ export default async function DashboardPage() {
                     No books in your digital library yet.
                   </div>
                   <Link
-                    href="/library"
+                    href="/online-books"
                     className="text-xs font-bold uppercase tracking-widest text-primary-forest hover:text-accent-gold transition-colors flex items-center gap-1.5 group"
                   >
                     Browse Book Library

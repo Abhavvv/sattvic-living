@@ -47,6 +47,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -55,6 +56,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -84,4 +87,156 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
 }
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Category {
+  id              String            @id @default(cuid())
+  name            String
+  slug            String            @unique
+  description     String?           @db.Text
+  articles        Article[]
+  ayurvedaContent AyurvedaContent[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Article {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  excerpt         String?       @db.Text
+  content         String        @db.Text
+  featuredImage   String?
+  status          ArticleStatus @default(DRAFT)
+  metaTitle       String?
+  metaDescription String?
+  publishedAt     DateTime?
+  categoryId      String?
+  category        Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags            String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([publishedAt])
+}
+
+model AyurvedaContent {
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  content       String        @db.Text
+  featuredImage String?
+  status        ArticleStatus @default(DRAFT)
+  categoryId    String?
+  category      Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+}
+
+model Book {
+  id          String   @id @default(cuid())
+  title       String   @unique
+  slug        String   @unique
+  description String   @db.Text
+  author      String
+  coverImage  String?
+  pdfUrl      String?
+  isPremium   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FAQ {
+  id           String  @id @default(cuid())
+  question     String
+  answer       String  @db.Text
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+}
+
+enum YogaClassStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum YogaSessionStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+model Instructor {
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  bio             String      @db.Text
+  profileImage    String?
+  certifications  String?     @db.Text
+  specialization  String
+  experienceYears Int
+  email           String
+  phone           String?
+  isActive        Boolean     @default(true)
+  classes         YogaClass[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([isActive])
+}
+
+model YogaClass {
+  id            String          @id @default(cuid())
+  title         String
+  slug          String          @unique
+  description   String          @db.Text
+  category      String
+  difficulty    String
+  duration      Int
+  capacity      Int
+  price         Float
+  featuredImage String?
+  isOnline      Boolean         @default(false)
+  status        YogaClassStatus @default(DRAFT)
+  instructorId  String
+  instructor    Instructor      @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  sessions      YogaSession[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([instructorId])
+  @@index([status])
+}
+
+model YogaSession {
+  id             String            @id @default(cuid())
+  classId        String
+  class          YogaClass         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  startTime      DateTime
+  endTime        DateTime
+  location       String
+  meetingLink    String?
+  capacity       Int
+  availableSeats Int
+  status         YogaSessionStatus @default(SCHEDULED)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([classId])
+  @@index([startTime])
+  @@index([status])
+}
+
