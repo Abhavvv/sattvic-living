@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -34,6 +35,33 @@ export default async function DashboardPage() {
         year: "numeric",
       })
     : "Recently Joined";
+
+  // Query next upcoming booking
+  const upcomingBooking = await db.booking.findFirst({
+    where: {
+      userId: user.id!,
+      bookingStatus: { in: ["CONFIRMED", "PENDING"] },
+      yogaSession: {
+        startTime: { gte: new Date() },
+      },
+    },
+    include: {
+      yogaSession: {
+        include: {
+          class: {
+            include: {
+              instructor: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      yogaSession: {
+        startTime: "asc",
+      },
+    },
+  });
 
   return (
     <>
@@ -158,7 +186,7 @@ export default async function DashboardPage() {
                   <div className="w-12 h-12 rounded-lg bg-[#FCFCFA] flex items-center justify-center border border-primary-sage/15 shrink-0 text-accent-gold">
                     <Calendar size={22} />
                   </div>
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1.5 overflow-hidden w-full">
                     <h3 className="font-serif text-lg font-bold text-primary-forest leading-snug">
                       Upcoming Yoga Classes
                     </h3>
@@ -169,14 +197,38 @@ export default async function DashboardPage() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  <div className="text-[11px] text-foreground/50 italic font-light">
-                    No active yoga course bookings found.
-                  </div>
+                  {upcomingBooking ? (
+                    <div className="text-left space-y-1">
+                      <div className="text-xs font-bold text-primary-forest leading-tight truncate">
+                        {upcomingBooking.yogaSession.class.title}
+                      </div>
+                      <div className="text-[10px] text-foreground/60 leading-none">
+                        {upcomingBooking.yogaSession.startTime.toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                        })}{" "}
+                        at{" "}
+                        {upcomingBooking.yogaSession.startTime.toLocaleTimeString("en-US", {
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                      <div className="text-[10px] text-accent-gold font-semibold leading-none mt-1">
+                        Guide: {upcomingBooking.yogaSession.class.instructor.name} &bull;{" "}
+                        {upcomingBooking.yogaSession.class.isOnline ? "Online" : "Studio"}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-foreground/50 italic font-light">
+                      No active yoga course bookings found.
+                    </div>
+                  )}
                   <Link
-                    href="/yoga-classes"
-                    className="text-xs font-bold uppercase tracking-widest text-primary-forest hover:text-accent-gold transition-colors flex items-center gap-1.5 group"
+                    href={upcomingBooking ? "/dashboard/bookings" : "/yoga-classes"}
+                    className="text-xs font-bold uppercase tracking-widest text-primary-forest hover:text-accent-gold transition-colors flex items-center gap-1.5 group w-fit"
                   >
-                    Explore Yoga Classes
+                    {upcomingBooking ? "Manage Bookings" : "Explore Yoga Classes"}
                     <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>

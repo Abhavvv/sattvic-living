@@ -4,11 +4,11 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FadeUp from "@/components/animations/FadeUp";
+import { auth } from "@/auth";
+import SessionBookingList from "@/components/yoga/SessionBookingList";
 import {
   Clock,
   Sparkles,
-  MapPin,
-  Video,
   Award,
   Calendar,
   AlertCircle,
@@ -43,13 +43,24 @@ export default async function YogaClassDetailPage({ params }: YogaClassDetailPag
     notFound();
   }
 
-  const formatDate = (dateObj: Date) => {
-    return dateObj.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-  };
+  const session = await auth();
+  let userBookedSessionIds: string[] = [];
 
-  const formatTime = (dateObj: Date) => {
-    return dateObj.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  };
+  if (session && session.user && session.user.id) {
+    const bookings = await db.booking.findMany({
+      where: {
+        userId: session.user.id,
+        yogaSession: {
+          classId: yogaClass.id,
+        },
+        bookingStatus: { not: "CANCELLED" },
+      },
+      select: {
+        yogaSessionId: true,
+      },
+    });
+    userBookedSessionIds = bookings.map((b) => b.yogaSessionId);
+  }
 
   return (
     <>
@@ -131,59 +142,25 @@ export default async function YogaClassDetailPage({ params }: YogaClassDetailPag
                   Reserve a spot in any of our scheduled live streams or physical sessions below.
                 </p>
 
-                <div className="space-y-4">
-                  {yogaClass.sessions.length === 0 ? (
-                    <div className="p-6 bg-secondary-cream/50 border border-primary-sage/10 rounded-xl text-center">
-                      <p className="text-xs italic text-foreground/50">
-                        No upcoming timetable sessions are currently scheduled for this class style. Check back soon.
-                      </p>
-                    </div>
-                  ) : (
-                    yogaClass.sessions.map((session) => (
-                      <div
-                        key={session.id}
-                        className="p-5 bg-secondary-cream/20 border border-primary-sage/10 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-accent-gold/20 transition-all"
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                          <div className="w-14 px-3 py-2 bg-secondary-cream border border-accent-gold/25 rounded-lg text-center text-accent-gold shrink-0">
-                            <span className="block text-[9px] uppercase font-bold tracking-wider leading-none">
-                              {formatDate(session.startTime).split(",")[1]?.trim().split(" ")[0]}
-                            </span>
-                            <span className="block text-base font-bold leading-none mt-0.5">
-                              {formatDate(session.startTime).split(",")[1]?.trim().split(" ")[1]}
-                            </span>
-                          </div>
-
-                          <div>
-                            <span className="text-[10px] font-bold text-foreground/50 uppercase tracking-wider block">
-                              {formatDate(session.startTime).split(",")[0]}, {formatTime(session.startTime)} - {formatTime(session.endTime)}
-                            </span>
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-primary-forest mt-1">
-                              {yogaClass.isOnline ? (
-                                <Video size={13} className="text-blue-500 shrink-0" />
-                              ) : (
-                                <MapPin size={13} className="text-amber-600 shrink-0" />
-                              )}
-                              <span>{session.location}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1.5 shrink-0">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/60 leading-none">
-                            {session.availableSeats} / {session.capacity} Slots Left
-                          </span>
-                          <button
-                            disabled
-                            className="px-4 py-1.5 rounded-full bg-primary-forest/10 border border-primary-forest/20 text-primary-forest text-[10px] uppercase font-bold tracking-wider cursor-not-allowed opacity-75"
-                          >
-                            Reserve Spot
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+                <SessionBookingList
+                  sessions={yogaClass.sessions.map((s) => ({
+                    id: s.id,
+                    startTime: s.startTime.toISOString(),
+                    endTime: s.endTime.toISOString(),
+                    location: s.location,
+                    meetingLink: s.meetingLink,
+                    capacity: s.capacity,
+                    availableSeats: s.availableSeats,
+                    status: s.status,
+                  }))}
+                  classId={yogaClass.id}
+                  classSlug={yogaClass.slug}
+                  classTitle={yogaClass.title}
+                  price={yogaClass.price}
+                  isOnline={yogaClass.isOnline}
+                  currentUser={session && session.user ? { id: session.user.id!, email: session.user.email! } : null}
+                  initialBookedSessionIds={userBookedSessionIds}
+                />
               </div>
             </FadeUp>
           </div>
@@ -209,16 +186,13 @@ export default async function YogaClassDetailPage({ params }: YogaClassDetailPag
                 <div className="p-3 bg-accent-gold/5 border border-accent-gold/15 text-[11px] leading-relaxed text-foreground/80 font-light rounded-xl flex items-start gap-2">
                   <AlertCircle size={14} className="text-accent-gold shrink-0 mt-0.5" />
                   <span>
-                    <strong>Note:</strong> Class bookings and payment processing are coming soon in the next phase! Online classes will stream via Zoom.
+                    Select any of the upcoming scheduled slots on the left to register for classes instantly.
                   </span>
                 </div>
 
-                <button
-                  disabled
-                  className="w-full text-center text-xs font-bold uppercase tracking-widest text-primary-forest/50 bg-[#F8F4EC] border border-primary-sage/20 py-3.5 rounded-full cursor-not-allowed opacity-75"
-                >
-                  Registrations Inactive
-                </button>
+                <div className="w-full text-center text-xs font-bold uppercase tracking-widest text-[#FCFCFA] bg-primary-forest hover:bg-primary-sage py-3.5 rounded-full shadow transition-all">
+                  Registrations Active
+                </div>
               </div>
             </FadeUp>
 

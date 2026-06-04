@@ -13,6 +13,12 @@ interface Instructor {
   specialization: string;
 }
 
+interface YogaSessionRef {
+  id: string;
+  availableSeats: number;
+  capacity: number;
+}
+
 interface YogaClass {
   id: string;
   title: string;
@@ -26,6 +32,7 @@ interface YogaClass {
   featuredImage: string | null;
   isOnline: boolean;
   instructor: Instructor;
+  sessions: YogaSessionRef[];
 }
 
 interface YogaClassesPublicClientProps {
@@ -249,6 +256,18 @@ export default function YogaClassesPublicClient({ classes }: YogaClassesPublicCl
                     <p className="text-xs text-foreground/75 leading-relaxed font-light line-clamp-3">
                       {cls.description.replace(/<[^>]*>/g, "").slice(0, 140)}...
                     </p>
+
+                    <div className="mt-2 text-[10px] text-primary-sage font-medium flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-accent-gold rounded-full" />
+                      {cls.sessions && cls.sessions.length > 0 ? (
+                        <span>
+                          {cls.sessions.length} session{cls.sessions.length > 1 ? "s" : ""} scheduled &bull;{" "}
+                          {cls.sessions.reduce((sum, s) => sum + s.availableSeats, 0)} spots left
+                        </span>
+                      ) : (
+                        <span className="text-foreground/40">No sessions scheduled</span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Instructor cardlet & Pricing */}

@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import crypto from "crypto";
+import { headers } from "next/headers";
 
 import { db } from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/mail";
 import { logSecurityEvent } from "@/lib/audit";
+import { registerLimiter } from "@/lib/rate-limiter";
 
 // Enforces strict password complexity policy
 const passwordPolicy = z
@@ -42,6 +44,18 @@ export async function POST(req: Request) {
     }
 
     const { name, email, password } = result.data;
+
+    // Apply strict security rate limiting (max 3 registration attempts per 10 minutes)
+    const reqHeaders = await headers();
+    const ip = reqHeaders.get("x-forwarded-for") || "127.0.0.1";
+    const limitKey = `register:${ip}:${email}`;
+    if (registerLimiter.isRateLimited(limitKey)) {
+      await logSecurityEvent(null, "RATE_LIMIT_EXCEEDED", `Account registration rate-limited: ${email} (IP: ${ip})`);
+      return NextResponse.json(
+        { error: "Too many registration attempts. Please wait 10 minutes before trying again." },
+        { status: 429 }
+      );
+    }
 
     // Check if user already exists
     const existingUser = await db.user.findUnique({

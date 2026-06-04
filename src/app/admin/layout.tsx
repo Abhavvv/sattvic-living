@@ -13,7 +13,8 @@ import {
   User,
   Calendar,
   Users,
-  Activity
+  Activity,
+  ClipboardList
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -45,6 +46,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/admin/yoga/classes", label: "Yoga Classes", icon: Activity },
     { href: "/admin/yoga/instructors", label: "Instructors", icon: Users },
     { href: "/admin/yoga/sessions", label: "Sessions", icon: Calendar },
+    { href: "/admin/bookings", label: "Bookings", icon: ClipboardList },
   ];
 
   return (

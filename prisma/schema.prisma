@@ -28,6 +28,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   auditLogs     AuditLog[]
+  bookings      Booking[]
 }
 
 model Account {
@@ -66,6 +67,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@index([identifier])
 }
 
 model PasswordResetToken {
@@ -75,6 +77,30 @@ model PasswordResetToken {
   expires DateTime
 
   @@unique([email, token])
+  @@index([email])
+}
+
+model SattvicMeal {
+  id               String   @id @default(cuid())
+  name             String
+  category         String   // Breakfast | Lunch | Dinner | Beverage | Snack
+  description      String   @db.Text
+  image            String
+  calories         Int
+  carbs            Int
+  protein          Int
+  fat              Int
+  ingredients      String   @db.Text
+  benefits         String   @db.Text
+  doshaVata        String   // Excellent | Good | Neutral | Reduce
+  doshaPitta       String
+  doshaKapha       String
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
 }
 
 model AuditLog {
@@ -232,6 +258,7 @@ model YogaSession {
   capacity       Int
   availableSeats Int
   status         YogaSessionStatus @default(SCHEDULED)
+  bookings       Booking[]
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
@@ -239,4 +266,37 @@ model YogaSession {
   @@index([startTime])
   @@index([status])
 }
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum AttendanceStatus {
+  NOT_MARKED
+  PRESENT
+  ABSENT
+}
+
+model Booking {
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  yogaSessionId    String
+  yogaSession      YogaSession      @relation(fields: [yogaSessionId], references: [id], onDelete: Cascade)
+  bookingStatus    BookingStatus    @default(CONFIRMED)
+  attendanceStatus AttendanceStatus @default(NOT_MARKED)
+  notes            String?          @db.Text
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([userId, yogaSessionId])
+  @@index([userId])
+  @@index([yogaSessionId])
+  @@index([bookingStatus])
+}
+
 

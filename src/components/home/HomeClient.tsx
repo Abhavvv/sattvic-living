@@ -7,7 +7,6 @@ import { ArrowRight, Compass, Sun, Heart, Sparkles, ChevronRight, Star, BookOpen
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FadeUp from "@/components/animations/FadeUp";
-import { sattvicMeals } from "@/data/mockData";
 
 interface HomeArticle {
   id: string;
@@ -45,7 +44,6 @@ interface HomeYogaClass {
   category: string;
   difficulty: string;
   duration: number;
-  capacity: number;
   price: number;
   featuredImage: string | null;
   isOnline: boolean;
@@ -53,7 +51,7 @@ interface HomeYogaClass {
     id: string;
     name: string;
     profileImage: string | null;
-  } | null;
+  };
 }
 
 interface HomeInstructor {
@@ -67,11 +65,24 @@ interface HomeInstructor {
   experienceYears: number;
 }
 
+interface HomeMeal {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  image: string;
+  calories: number;
+  carbs: number;
+  protein: number;
+  fat: number;
+}
+
 interface HomeClientProps {
   initialArticles: HomeArticle[];
   initialBooks: HomeBook[];
   initialYogaClasses: HomeYogaClass[];
   initialInstructors: HomeInstructor[];
+  initialMeals: HomeMeal[];
 }
 
 export default function HomeClient({
@@ -79,9 +90,22 @@ export default function HomeClient({
   initialBooks,
   initialYogaClasses,
   initialInstructors,
+  initialMeals,
 }: HomeClientProps) {
   const featuredYoga = initialYogaClasses;
-  const featuredMeals = sattvicMeals.slice(0, 3);
+  const featuredMeals = initialMeals.slice(0, 3).map((meal) => ({
+    id: meal.id,
+    name: meal.name,
+    category: meal.category,
+    description: meal.description,
+    image: meal.image,
+    macros: {
+      calories: meal.calories,
+      carbs: meal.carbs,
+      protein: meal.protein,
+      fat: meal.fat,
+    },
+  }));
   const spotlightInstructors = initialInstructors;
 
   const benefits = [

@@ -19,6 +19,17 @@ export default async function YogaClassesPage() {
           specialization: true,
         },
       },
+      sessions: {
+        where: {
+          startTime: { gte: new Date() },
+          status: "SCHEDULED",
+        },
+        select: {
+          id: true,
+          availableSeats: true,
+          capacity: true,
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });

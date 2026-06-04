@@ -40,12 +40,20 @@ export default async function HomePage() {
     take: 3,
   });
 
+  // Query 4 active meals from database
+  const meals = await db.sattvicMeal.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+    take: 4,
+  });
+
   return (
     <HomeClient
       initialArticles={articles}
       initialBooks={books}
       initialYogaClasses={yogaClasses}
       initialInstructors={instructors}
+      initialMeals={meals}
     />
   );
 }

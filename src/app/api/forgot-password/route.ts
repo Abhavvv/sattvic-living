@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { z } from "zod";
+import { headers } from "next/headers";
 
 import { db } from "@/lib/db";
 import { sendPasswordResetEmail } from "@/lib/mail";
+import { passwordResetLimiter } from "@/lib/rate-limiter";
+import { logSecurityEvent } from "@/lib/audit";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -23,6 +26,18 @@ export async function POST(req: Request) {
     }
 
     const { email } = result.data;
+
+    // Apply strict security rate limiting (max 3 requests per 10 minutes)
+    const reqHeaders = await headers();
+    const ip = reqHeaders.get("x-forwarded-for") || "127.0.0.1";
+    const limitKey = `password-reset:${ip}:${email}`;
+    if (passwordResetLimiter.isRateLimited(limitKey)) {
+      await logSecurityEvent(null, "RATE_LIMIT_EXCEEDED", `Password reset requested rate-limited: ${email} (IP: ${ip})`);
+      return NextResponse.json(
+        { error: "Too many requests. Please wait 10 minutes before requesting another password reset link." },
+        { status: 429 }
+      );
+    }
 
     // Check if user exists
     const user = await db.user.findUnique({
