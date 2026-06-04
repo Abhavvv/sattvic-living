@@ -1,19 +1,94 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, CheckCircle2, X, AlertCircle, ShieldCheck } from "lucide-react";
+import { Leaf, CheckCircle2, X, AlertCircle, ShieldCheck, Loader2 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FadeUp from "@/components/animations/FadeUp";
-import { sattvicMeals } from "@/data/mockData";
+
+interface DBMeal {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  image: string;
+  calories: number;
+  carbs: number;
+  protein: number;
+  fat: number;
+  ingredients: string;
+  benefits: string;
+  doshaVata: string;
+  doshaPitta: string;
+  doshaKapha: string;
+}
+
+interface ParsedMeal {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  image: string;
+  macros: {
+    calories: number;
+    carbs: number;
+    protein: number;
+    fat: number;
+  };
+  ingredients: string[];
+  benefits: string[];
+  doshaSuitability: {
+    vata: string;
+    pitta: string;
+    kapha: string;
+  };
+}
 
 export default function SattvicMealsPage() {
+  const [meals, setMeals] = useState<ParsedMeal[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: string; period: string; desc: string; features: string[]; recommended?: boolean } | null>(null);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [address, setAddress] = useState("");
   const [zipcode, setZipcode] = useState("");
+
+  useEffect(() => {
+    async function loadMeals() {
+      try {
+        const res = await fetch("/api/meals");
+        if (!res.ok) throw new Error("Failed to fetch meals");
+        const data: DBMeal[] = await res.json();
+        const parsed = data.map((meal) => ({
+          id: meal.id,
+          name: meal.name,
+          category: meal.category,
+          description: meal.description,
+          image: meal.image,
+          macros: {
+            calories: meal.calories,
+            carbs: meal.carbs,
+            protein: meal.protein,
+            fat: meal.fat,
+          },
+          ingredients: meal.ingredients.split(",").map((s) => s.trim()),
+          benefits: meal.benefits.split(",").map((s) => s.trim()),
+          doshaSuitability: {
+            vata: meal.doshaVata,
+            pitta: meal.doshaPitta,
+            kapha: meal.doshaKapha,
+          },
+        }));
+        setMeals(parsed);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadMeals();
+  }, []);
 
   const mealPlans = [
     {
@@ -92,8 +167,17 @@ export default function SattvicMealsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-            {sattvicMeals.map((meal, idx) => (
-              <FadeUp key={meal.id} delay={idx * 0.08} className="group bg-[#F8F4EC] rounded-3xl p-6 sm:p-8 border border-primary-sage/10 hover:shadow-xl hover:border-accent-gold/25 transition-all duration-300 flex flex-col lg:flex-row gap-6">
+            {loading ? (
+              <div className="col-span-full py-16 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="animate-spin text-accent-gold" size={28} />
+                <span className="text-xs font-semibold text-primary-forest uppercase tracking-widest">Nourishing Recipe Deck...</span>
+              </div>
+            ) : meals.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-foreground/45 italic font-light">
+                No signature recipes found in our kitchen records.
+              </div>
+            ) : meals.map((meal, idx) => (
+                <FadeUp key={meal.id} delay={idx * 0.08} className="group bg-[#F8F4EC] rounded-3xl p-6 sm:p-8 border border-primary-sage/10 hover:shadow-xl hover:border-accent-gold/25 transition-all duration-300 flex flex-col lg:flex-row gap-6">
                 
                 {/* Meal image zoomed */}
                 <div className="w-full lg:w-48 h-48 lg:h-full shrink-0 rounded-2xl overflow-hidden shadow border border-primary-sage/10 relative bg-primary-forest/5">

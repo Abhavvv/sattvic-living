@@ -1,0 +1,302 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?   // For credentials-based authentication
+  role          Role      @default(USER)
+  phone         String?
+  bio           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  auditLogs     AuditLog[]
+  bookings      Booking[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@index([identifier])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+  @@index([email])
+}
+
+model SattvicMeal {
+  id               String   @id @default(cuid())
+  name             String
+  category         String   // Breakfast | Lunch | Dinner | Beverage | Snack
+  description      String   @db.Text
+  image            String
+  calories         Int
+  carbs            Int
+  protein          Int
+  fat              Int
+  ingredients      String   @db.Text
+  benefits         String   @db.Text
+  doshaVata        String   // Excellent | Good | Neutral | Reduce
+  doshaPitta       String
+  doshaKapha       String
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  details   String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Category {
+  id              String            @id @default(cuid())
+  name            String
+  slug            String            @unique
+  description     String?           @db.Text
+  articles        Article[]
+  ayurvedaContent AyurvedaContent[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Article {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  excerpt         String?       @db.Text
+  content         String        @db.Text
+  featuredImage   String?
+  status          ArticleStatus @default(DRAFT)
+  metaTitle       String?
+  metaDescription String?
+  publishedAt     DateTime?
+  categoryId      String?
+  category        Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags            String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([publishedAt])
+}
+
+model AyurvedaContent {
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  content       String        @db.Text
+  featuredImage String?
+  status        ArticleStatus @default(DRAFT)
+  categoryId    String?
+  category      Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+}
+
+model Book {
+  id          String   @id @default(cuid())
+  title       String   @unique
+  slug        String   @unique
+  description String   @db.Text
+  author      String
+  coverImage  String?
+  pdfUrl      String?
+  isPremium   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FAQ {
+  id           String  @id @default(cuid())
+  question     String
+  answer       String  @db.Text
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+}
+
+enum YogaClassStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum YogaSessionStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+model Instructor {
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  bio             String      @db.Text
+  profileImage    String?
+  certifications  String?     @db.Text
+  specialization  String
+  experienceYears Int
+  email           String
+  phone           String?
+  isActive        Boolean     @default(true)
+  classes         YogaClass[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([isActive])
+}
+
+model YogaClass {
+  id            String          @id @default(cuid())
+  title         String
+  slug          String          @unique
+  description   String          @db.Text
+  category      String
+  difficulty    String
+  duration      Int
+  capacity      Int
+  price         Float
+  featuredImage String?
+  isOnline      Boolean         @default(false)
+  status        YogaClassStatus @default(DRAFT)
+  instructorId  String
+  instructor    Instructor      @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  sessions      YogaSession[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([instructorId])
+  @@index([status])
+}
+
+model YogaSession {
+  id             String            @id @default(cuid())
+  classId        String
+  class          YogaClass         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  startTime      DateTime
+  endTime        DateTime
+  location       String
+  meetingLink    String?
+  capacity       Int
+  availableSeats Int
+  status         YogaSessionStatus @default(SCHEDULED)
+  bookings       Booking[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([classId])
+  @@index([startTime])
+  @@index([status])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum AttendanceStatus {
+  NOT_MARKED
+  PRESENT
+  ABSENT
+}
+
+model Booking {
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  yogaSessionId    String
+  yogaSession      YogaSession      @relation(fields: [yogaSessionId], references: [id], onDelete: Cascade)
+  bookingStatus    BookingStatus    @default(CONFIRMED)
+  attendanceStatus AttendanceStatus @default(NOT_MARKED)
+  notes            String?          @db.Text
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([userId, yogaSessionId])
+  @@index([userId])
+  @@index([yogaSessionId])
+  @@index([bookingStatus])
+}
+
+

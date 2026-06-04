@@ -4,13 +4,17 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Flower, Flame, Layers } from "lucide-react";
+import { Menu, X, ChevronDown, Flower, Flame, Layers, LogOut, User } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+
+  const isLoggedIn = status === "authenticated";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,11 +36,21 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/yoga", label: "Yoga" },
-    { href: "/ayurveda", label: "Ayurveda" },
-    { href: "/library", label: "Library" },
+    ...(isLoggedIn
+      ? [
+          { href: "/dashboard", label: "Dashboard" },
+          { href: "/profile", label: "Profile" },
+          { href: "/settings", label: "Settings" },
+        ]
+      : []),
+    { href: "/yoga-classes", label: "Yoga Classes" },
+    { href: "/instructors", label: "Instructors" },
+    { href: "/ayurveda-learning", label: "Ayurveda" },
+    { href: "/online-books", label: "Library" },
+    { href: "/articles", label: "Articles" },
     { href: "/meals", label: "Meals" },
     { href: "/about", label: "About" },
+    { href: "/faq", label: "FAQ" },
     { href: "/contact", label: "Contact" },
   ];
 
@@ -74,7 +88,7 @@ export default function Navbar() {
             >
               <button
                 className={`flex items-center gap-1 font-medium text-sm transition-colors py-2 focus:outline-none ${
-                  megaMenuOpen || ["/yoga", "/ayurveda", "/meals"].some((p) => pathname === p)
+                  megaMenuOpen || ["/yoga-classes", "/instructors", "/ayurveda-learning", "/meals"].some((p) => pathname.startsWith(p))
                     ? "text-primary-forest"
                     : "text-foreground/80 hover:text-primary-forest"
                 }`}
@@ -102,12 +116,20 @@ export default function Navbar() {
                       <p className="text-xs text-foreground/75 mb-2 leading-relaxed">
                         Flow in mindfulness. Rejuvenate structural balance & sacred pranayama.
                       </p>
-                      <Link
-                        href="/yoga"
-                        className="text-xs font-semibold text-accent-gold hover:text-primary-forest flex items-center gap-1 transition-colors mt-auto"
-                      >
-                        Explore Classes &rarr;
-                      </Link>
+                      <div className="flex flex-col gap-1.5 mt-auto">
+                        <Link
+                          href="/yoga-classes"
+                          className="text-xs font-semibold text-accent-gold hover:text-primary-forest flex items-center gap-1 transition-colors"
+                        >
+                          Explore Classes &rarr;
+                        </Link>
+                        <Link
+                          href="/instructors"
+                          className="text-xs font-semibold text-accent-gold hover:text-primary-forest flex items-center gap-1 transition-colors"
+                        >
+                          Meet Guides &rarr;
+                        </Link>
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -119,7 +141,7 @@ export default function Navbar() {
                         Discover your unique metabolic constitution. Balance doshas and habits.
                       </p>
                       <Link
-                        href="/ayurveda"
+                        href="/ayurveda-learning"
                         className="text-xs font-semibold text-accent-gold hover:text-primary-forest flex items-center gap-1 transition-colors mt-auto"
                       >
                         Read Guides &rarr;
@@ -147,7 +169,7 @@ export default function Navbar() {
             </div>
 
             {/* Static Nav Links */}
-            {navLinks.filter(link => !["Yoga", "Ayurveda", "Meals"].includes(link.label)).map((link) => {
+            {navLinks.filter(link => !["Yoga Classes", "Instructors", "Ayurveda", "Meals"].includes(link.label)).map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
@@ -172,12 +194,44 @@ export default function Navbar() {
 
           {/* Desktop Right Action */}
           <div className="hidden md:flex items-center gap-4">
-            <Link
-              href="/yoga"
-              className="text-xs font-bold uppercase tracking-widest text-[#FCFCFA] px-5 py-2.5 rounded-full bg-primary-forest hover:bg-primary-sage transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-            >
-              Begin Journey
-            </Link>
+            {isLoggedIn ? (
+              <>
+                {session?.user?.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || "User Avatar"}
+                    className="w-8 h-8 rounded-full object-cover border border-accent-gold/45 shadow-sm"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full border border-primary-sage/35 flex items-center justify-center bg-secondary-cream text-primary-sage shrink-0">
+                    <User size={14} />
+                  </div>
+                )}
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="text-xs font-bold uppercase tracking-widest text-[#2D3E35] border border-primary-forest/35 hover:bg-primary-forest hover:text-[#FCFCFA] px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5 cursor-pointer font-medium"
+                >
+                  <LogOut size={12} />
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-xs font-bold uppercase tracking-widest text-primary-forest hover:text-accent-gold transition-colors py-2 font-medium"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/yoga-classes"
+                  className="text-xs font-bold uppercase tracking-widest text-[#FCFCFA] px-5 py-2.5 rounded-full bg-primary-forest hover:bg-primary-sage transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                >
+                  Begin Journey
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -240,12 +294,30 @@ export default function Navbar() {
               <p className="text-xs text-foreground/60 italic leading-relaxed">
                 &ldquo;Purity of body yields clarity of mind, which blossoms into spiritual tranquility.&rdquo;
               </p>
-              <Link
-                href="/contact"
-                className="w-full text-center text-xs font-bold uppercase tracking-widest text-[#FCFCFA] py-3 rounded-full bg-primary-forest hover:bg-primary-sage transition-colors"
-              >
-                Schedule Consultation
-              </Link>
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/contact"
+                  className="w-full text-center text-xs font-bold uppercase tracking-widest text-[#FCFCFA] py-3 rounded-full bg-primary-forest hover:bg-primary-sage transition-colors"
+                >
+                  Schedule Consultation
+                </Link>
+                {isLoggedIn ? (
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="w-full text-center text-xs font-bold uppercase tracking-widest text-primary-forest border border-primary-forest/35 hover:bg-primary-forest hover:text-[#FCFCFA] py-3 rounded-full transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <LogOut size={12} />
+                    Log Out
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="w-full text-center text-xs font-bold uppercase tracking-widest text-accent-gold border border-accent-gold/45 py-3 rounded-full transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

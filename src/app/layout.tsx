@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -31,7 +32,9 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} font-sans antialiased bg-[#F8F4EC] text-[#2D3E35]`}
       >
-        {children}
+        <SessionProvider>
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );
