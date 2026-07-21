@@ -41,11 +41,24 @@ export default async function HomePage() {
   });
 
   // Query 4 active meals from database
-  const meals = await db.sattvicMeal.findMany({
-    where: { isActive: true },
+  const rawMeals = await db.meal.findMany({
+    where: { isPublished: true, isAvailable: true },
+    include: { category: true },
     orderBy: { name: "asc" },
     take: 4,
   });
+
+  const meals = rawMeals.map((m) => ({
+    id: m.id,
+    name: m.name,
+    category: m.category.name,
+    description: m.shortDescription,
+    image: m.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800",
+    calories: m.calories,
+    carbs: m.carbs,
+    protein: m.protein,
+    fat: m.fat,
+  }));
 
   return (
     <HomeClient

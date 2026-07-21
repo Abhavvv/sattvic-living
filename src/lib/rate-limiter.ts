@@ -50,6 +50,10 @@ declare global {
   var globalRegisterLimiter: SlidingWindowLimiter | undefined;
   // eslint-disable-next-line no-var
   var globalBookingLimiter: SlidingWindowLimiter | undefined;
+  // eslint-disable-next-line no-var
+  var globalOrderLimiter: SlidingWindowLimiter | undefined;
+  // eslint-disable-next-line no-var
+  var globalPaymentLimiter: SlidingWindowLimiter | undefined;
 }
 
 export const loginLimiter =
@@ -67,10 +71,18 @@ export const registerLimiter =
 export const bookingLimiter =
   globalThis.globalBookingLimiter || new SlidingWindowLimiter(60 * 1000, 10); // Max 10 requests per minute
 
+export const orderLimiter =
+  globalThis.globalOrderLimiter || new SlidingWindowLimiter(60 * 1000, 5); // Max 5 requests per minute
+
+export const paymentLimiter =
+  globalThis.globalPaymentLimiter || new SlidingWindowLimiter(60 * 1000, 10); // Max 10 requests per minute
+
 if (process.env.NODE_ENV !== "production") {
   globalThis.globalLoginLimiter = loginLimiter;
   globalThis.globalEmailVerifyLimiter = emailVerifyLimiter;
   globalThis.globalPasswordResetLimiter = passwordResetLimiter;
   globalThis.globalRegisterLimiter = registerLimiter;
   globalThis.globalBookingLimiter = bookingLimiter;
+  globalThis.globalOrderLimiter = orderLimiter;
+  globalThis.globalPaymentLimiter = paymentLimiter;
 }

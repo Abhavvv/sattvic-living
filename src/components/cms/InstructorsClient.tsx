@@ -350,7 +350,7 @@ export default function InstructorsClient({ instructors }: InstructorsClientProp
                 <th className="py-4 px-6">Experience</th>
                 <th className="py-4 px-6">Email / Phone</th>
                 <th className="py-4 px-6">Status</th>
-                <th className="py-4 px-6 text-right">Actions</th>
+                <th className="py-4 px-6 text-right w-24">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-primary-sage/5 text-xs text-foreground/80">
@@ -402,21 +402,23 @@ export default function InstructorsClient({ instructors }: InstructorsClientProp
                         {item.isActive ? "ACTIVE" : "INACTIVE"}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-right space-x-2">
-                      <button
-                        onClick={() => openEditPanel(item)}
-                        className="p-1.5 text-foreground/50 hover:text-accent-gold transition-colors cursor-pointer"
-                        title="Edit Instructor"
-                      >
-                        <Edit2 size={13} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="p-1.5 text-foreground/50 hover:text-red-600 transition-colors cursor-pointer"
-                        title="Delete Instructor"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                    <td className="py-3 px-6 text-right">
+                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                        <button
+                          onClick={() => openEditPanel(item)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-primary-sage/10 text-foreground/50 hover:text-accent-gold hover:bg-accent-gold/5 focus-visible:ring-1 focus-visible:ring-accent-gold transition-all cursor-pointer"
+                          title="Edit Instructor"
+                        >
+                          <Edit2 size={13} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-primary-sage/10 text-foreground/50 hover:text-red-600 hover:bg-red-50 focus-visible:ring-1 focus-visible:ring-red-500 transition-all cursor-pointer"
+                          title="Delete Instructor"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

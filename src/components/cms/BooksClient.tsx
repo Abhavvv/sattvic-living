@@ -322,17 +322,17 @@ export default function BooksClient({ books }: BooksClientProps) {
                     <span className="text-[10px] text-foreground/35 italic">No Attachment</span>
                   )}
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <button
                       onClick={() => openEditPanel(book)}
-                      className="p-1.5 rounded-full hover:bg-primary-sage/10 text-foreground/50 hover:text-accent-gold transition-colors cursor-pointer"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg border border-primary-sage/10 text-foreground/50 hover:text-accent-gold hover:bg-accent-gold/5 focus-visible:ring-1 focus-visible:ring-accent-gold transition-all cursor-pointer"
                       title="Edit Book"
                     >
                       <Edit2 size={13} />
                     </button>
                     <button
                       onClick={() => handleDelete(book.id)}
-                      className="p-1.5 rounded-full hover:bg-primary-sage/10 text-foreground/50 hover:text-red-600 transition-colors cursor-pointer"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg border border-primary-sage/10 text-foreground/50 hover:text-red-600 hover:bg-red-50 focus-visible:ring-1 focus-visible:ring-red-500 transition-all cursor-pointer"
                       title="Delete Book"
                     >
                       <Trash2 size={13} />

@@ -29,8 +29,17 @@ export default async function DashboardPage() {
   }
 
   const user = session.user;
-  const joinDate = user.id
-    ? new Date(parseInt(user.id.substring(0, 8), 16) * 1000).toLocaleDateString("en-US", {
+
+  // Resolve true database createdAt timestamp instead of parsing CUIDs
+  const dbUser = user.id
+    ? await db.user.findUnique({
+        where: { id: user.id },
+        select: { createdAt: true },
+      })
+    : null;
+
+  const joinDate = dbUser?.createdAt
+    ? new Date(dbUser.createdAt).toLocaleDateString("en-US", {
         month: "long",
         year: "numeric",
       })
@@ -60,6 +69,16 @@ export default async function DashboardPage() {
       yogaSession: {
         startTime: "asc",
       },
+    },
+  });
+
+  // Query latest order for client dashboard card
+  const latestOrder = await db.mealOrder.findFirst({
+    where: {
+      userId: user.id!,
+    },
+    orderBy: {
+      createdAt: "desc",
     },
   });
 
@@ -251,16 +270,48 @@ export default async function DashboardPage() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  <div className="text-[11px] text-foreground/50 italic font-light">
-                    No active meal orders in progress.
+                  {latestOrder ? (
+                    <div className="text-left space-y-1">
+                      <div className="text-xs font-bold text-primary-forest leading-tight truncate">
+                        Order: {latestOrder.orderNumber}
+                      </div>
+                      <div className="text-[10px] text-foreground/60 leading-none">
+                        Scheduled: {latestOrder.deliveryDate.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </div>
+                      <div className="text-[10px] text-accent-gold font-semibold leading-none mt-1 uppercase tracking-wider">
+                        Status: {latestOrder.status}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-foreground/50 italic font-light">
+                      No active meal orders in progress.
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    {latestOrder && (
+                      <Link
+                        href="/dashboard/orders"
+                        className="text-xs font-bold uppercase tracking-widest text-primary-forest hover:text-accent-gold transition-colors flex items-center gap-1.5 group"
+                      >
+                        Track Orders
+                        <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    )}
+                    <Link
+                      href="/meals"
+                      className={`text-xs font-bold uppercase tracking-widest hover:text-accent-gold transition-colors flex items-center gap-1.5 group ${
+                        latestOrder ? "text-foreground/50 font-normal" : "text-primary-forest"
+                      }`}
+                    >
+                      {latestOrder ? "New Order" : "Browse Menu"}
+                      <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                    </Link>
                   </div>
-                  <Link
-                    href="/meals"
-                    className="text-xs font-bold uppercase tracking-widest text-primary-forest hover:text-accent-gold transition-colors flex items-center gap-1.5 group"
-                  >
-                    Browse Weekly Plans
-                    <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                  </Link>
                 </div>
               </div>
 

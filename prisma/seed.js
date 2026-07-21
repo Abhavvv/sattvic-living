@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-vars */
-const { PrismaClient, ArticleStatus, YogaClassStatus, YogaSessionStatus, Role } = require("@prisma/client");
+const { PrismaClient, ArticleStatus, YogaClassStatus, YogaSessionStatus } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
@@ -170,7 +170,7 @@ async function main() {
           id: "inst-2",
           name: "Swami Kripal",
           slug: "swami-kripal",
-          bio: "Having spent 12 years studying and meditating in seclusion in the foothills of the Himalayas, Swami Kripal shares the profound energetic wisdom of Kundalini, pranayama, and Vedic philosophy.",
+          bio: "Having spent 12 years studying and meditating in seclusion in the foothills of the Himalayas, Swami Kripal shares the energetic wisdom of Kundalini, pranayama, and Vedic philosophy.",
           profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600",
           certifications: "Master of Yogic Science (Haridwar), Kundalini Tantra Acharya, Himalayan Kriya Guide",
           specialization: "Kundalini & Spiritual Philosophy",
@@ -273,77 +273,148 @@ async function main() {
     });
   }
 
-  // 9. Seed SattvicMeals if empty
-  const mealCount = await prisma.sattvicMeal.count();
-  if (mealCount === 0) {
-    console.log("Creating Sattvic Meals...");
-    await prisma.sattvicMeal.createMany({
+  // 9. Seed MealCategory & Meals if empty
+  const mealCategoryCount = await prisma.mealCategory.count();
+  if (mealCategoryCount === 0) {
+    console.log("Creating Meal Categories...");
+    const breakfast = await prisma.mealCategory.create({
+      data: {
+        name: "Breakfast",
+        slug: "breakfast",
+        description: "High-prana morning foods to ignite your inner fire (Agni).",
+        image: "https://images.unsplash.com/photo-1517881917430-e70dfb3610aa?auto=format&fit=crop&q=80&w=800",
+        isActive: true,
+      }
+    });
+
+    const lunch = await prisma.mealCategory.create({
+      data: {
+        name: "Lunch",
+        slug: "lunch",
+        description: "Hearty, grounding, metabolic-balancing midday meals.",
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800",
+        isActive: true,
+      }
+    });
+
+    const dinner = await prisma.mealCategory.create({
+      data: {
+        name: "Dinner",
+        slug: "dinner",
+        description: "Light, mineral-rich evening meals for overnight digestion.",
+        image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800",
+        isActive: true,
+      }
+    });
+
+    const beverages = await prisma.mealCategory.create({
+      data: {
+        name: "Beverages",
+        slug: "beverages",
+        description: "Vitalizing herbal elixirs, adaptogenic moon milks, and teas.",
+        image: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&q=80&w=800",
+        isActive: true,
+      }
+    });
+
+    const snacks = await prisma.mealCategory.create({
+      data: {
+        name: "Snacks",
+        slug: "snacks",
+        description: "Nourishing, grounding bites to sustain energy levels.",
+        image: "https://images.unsplash.com/photo-1608039755401-742074f0548d?auto=format&fit=crop&q=80&w=800",
+        isActive: true,
+      }
+    });
+
+    console.log("Creating Meals...");
+    await prisma.meal.createMany({
       data: [
         {
           name: "Tridoshic Golden Kitchari",
-          category: "Lunch",
-          description: "The ultimate restorative meal of Ayurveda. This warm, easily digestible blend of yellow split mung dal, basmati rice, grass-fed ghee, and balancing spices is a complete protein source that gently purifies the digestive system (Agni).",
+          slug: "tridoshic-golden-kitchari",
+          shortDescription: "Warm, highly digestible yellow split mung dal, basmati rice, grass-fed ghee, and balancing spices.",
+          description: "The ultimate restorative meal of Ayurveda. This warm, easily digestible blend of yellow split mung dal, basmati rice, grass-fed ghee, and balancing spices is a complete protein source that gently purifies the digestive system (Agni). It is highly bioavailable and designed to soothe the gut while restoring deep metabolic balance.",
           image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=800",
+          categoryId: lunch.id,
+          price: 18.5,
           calories: 380,
-          carbs: 54,
           protein: 14,
+          carbs: 54,
           fat: 12,
           ingredients: "Organic Split Mung Dal, Aromatic Basmati Rice, Grass-fed Ghee, Fresh Ginger Root, Turmeric Powder, Whole Cumin Seeds, Fresh Cilantro",
-          benefits: "Deeply soothing for digestion, Highly bioavailable complete protein, Gently removes metabolic toxins (Ama), Balances all three constitutional Doshas",
-          doshaVata: "Excellent",
-          doshaPitta: "Excellent",
-          doshaKapha: "Good",
-          isActive: true,
+          benefits: "Deeply soothing for digestion, Highly bioavailable complete protein, Gently removes metabolic toxins (Ama)",
+          preparationNotes: "Simmer yellow split mung dal and basmati rice with freshly ground spices and fresh ginger in water until soft. Finish by stirring in grass-fed ghee and dynamic herbal garnishes.",
+          isFeatured: true,
+          isPublished: true,
+          isAvailable: true,
+          metaTitle: "Tridoshic Golden Kitchari - Sattvic Ayurveda Meal",
+          metaDescription: "Nourish and cleanse your body with our signature Tridoshic Golden Kitchari, the ultimate Ayurvedic healing and balancing meal."
         },
         {
           name: "Saffron Almond Ojas Bowl",
-          category: "Breakfast",
-          description: "A luxurious and vitalizing breakfast bowl packed with life force (Ojas). Features soaked almonds, Medjool dates, steel-cut oats, organic saffron threads, green cardamom, and toasted coconut flakes.",
+          slug: "saffron-almond-ojas-bowl",
+          shortDescription: "A vitalizing breakfast bowl packed with life force (Ojas), saffron, cardamom, and toasted almond flakes.",
+          description: "A luxurious and vitalizing breakfast bowl packed with life force (Ojas). Features steel-cut oats cooked in fresh almond milk, infused with organic saffron threads, green cardamom, Medjool dates, and finished with soaked almonds.",
           image: "https://images.unsplash.com/photo-1517881917430-e70dfb3610aa?auto=format&fit=crop&q=80&w=800",
+          categoryId: breakfast.id,
+          price: 15.0,
           calories: 420,
-          carbs: 48,
           protein: 12,
+          carbs: 48,
           fat: 20,
           ingredients: "Steel-cut Organic Oats, Soaked Peeled Almonds, Medjool Dates, Kashmiri Saffron, Ground Cardamom, Unsweetened Coconut Flakes, Raw Wild Honey",
-          benefits: "Rebuilds vital energy reserves (Ojas), Nourishes the nervous system, Provides long-sustained complex carbs, Soothes dry Vata types",
-          doshaVata: "Excellent",
-          doshaPitta: "Excellent",
-          doshaKapha: "Reduce",
-          isActive: true,
+          benefits: "Rebuilds vital energy reserves (Ojas), Nourishes the nervous system, Provides long-sustained complex carbs",
+          preparationNotes: "Slow-cook steel-cut oats in almond milk with crushed green cardamom. Stir in pure saffron threads and raw honey after cooking. Garnish with almonds and coconut flakes.",
+          isFeatured: true,
+          isPublished: true,
+          isAvailable: true,
+          metaTitle: "Saffron Almond Ojas Bowl - Energizing Sattvic Breakfast",
+          metaDescription: "Replenish your body's energy reserves and boost mental clarity with the saffron, almond, and date Ojas breakfast bowl."
         },
         {
           name: "Sprouted Mung & Spinach Restorative Soup",
-          category: "Dinner",
-          description: "A light, mineral-rich evening soup made of sprouted green mung beans, baby spinach, ginger, lemon juice, and a tempering of mustard seeds and curry leaves.",
+          slug: "sprouted-mung-spinach-restorative-soup",
+          shortDescription: "Light, mineral-rich evening soup made of sprouted green mung beans, baby spinach, ginger, and lemon.",
+          description: "A light, mineral-rich evening soup made of sprouted green mung beans, baby spinach, ginger, lemon juice, and a tempering of mustard seeds and curry leaves. Formulated to be incredibly easy to digest, ensuring your biological systems rest and regenerate overnight.",
           image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800",
+          categoryId: dinner.id,
+          price: 16.0,
           calories: 280,
-          carbs: 36,
           protein: 16,
+          carbs: 36,
           fat: 6,
           ingredients: "Sprouted Green Mung Beans, Organic Baby Spinach, Freshly Grated Ginger, Lemon Zest & Juice, Black Mustard Seeds, Fresh Curry Leaves, Cold-pressed Sesame Oil",
-          benefits: "Extremely light and easy to digest before sleep, Rich in iron, folate, and minerals, Supports overnight liver cleansing, Highly balancing for Kapha and Pitta",
-          doshaVata: "Neutral",
-          doshaPitta: "Excellent",
-          doshaKapha: "Excellent",
-          isActive: true,
+          benefits: "Extremely light and easy to digest before sleep, Supports overnight biological cleansing, Rich in iron and folate",
+          preparationNotes: "Sauté mustard seeds and curry leaves in sesame oil until fragrant. Add sprouted mung beans and water, simmer until soft, then stir in spinach, fresh ginger, and lemon juice.",
+          isFeatured: false,
+          isPublished: true,
+          isAvailable: true,
+          metaTitle: "Sprouted Mung & Spinach Soup - Light Ayurvedic Dinner",
+          metaDescription: "End your day with a light, mineral-rich sprouted mung bean and organic spinach soup, designed for restorative sleep and effortless digestion."
         },
         {
           name: "Golden Ashwagandha Moon Milk",
-          category: "Beverage",
+          slug: "golden-ashwagandha-moon-milk",
+          shortDescription: "A soothing bedtime beverage infused with adaptogenic Ashwagandha root, nutmeg, and cardamom.",
           description: "A nourishing evening beverage formulated to promote deep, restorative sleep. Warm homemade nut milk infused with adaptogenic Ashwagandha root, nutmeg, cinnamon, and a touch of raw maple syrup.",
           image: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&q=80&w=800",
+          categoryId: beverages.id,
+          price: 8.5,
           calories: 190,
-          carbs: 14,
           protein: 5,
+          carbs: 14,
           fat: 12,
           ingredients: "Raw Almonds & Cashews, Adaptogenic Ashwagandha Root Powder, Freshly Grated Nutmeg, Ceylon Cinnamon, Pure Grade-A Maple Syrup, Vanilla Bean Extract",
-          benefits: "Soothes overactive adrenal glands, Promotes natural deep sleep, Eases nighttime anxiety and muscle tension, Deeply pacifies Vata energy",
-          doshaVata: "Excellent",
-          doshaPitta: "Good",
-          doshaKapha: "Neutral",
-          isActive: true,
-        },
-      ],
+          benefits: "Soothes overactive adrenal glands, Promotes natural deep sleep, Eases nighttime anxiety and muscle tension",
+          preparationNotes: "Warm homemade nut milk on low heat. Whisk in Ashwagandha powder, cinnamon, and nutmeg. Remove from heat and sweeten with maple syrup and vanilla extract.",
+          isFeatured: false,
+          isPublished: true,
+          isAvailable: true,
+          metaTitle: "Golden Ashwagandha Moon Milk - Sleep Elixir",
+          metaDescription: "Indulge in a warm cup of Golden Ashwagandha Moon Milk, an Ayurvedic sleeping elixir designed to calm the mind and soothe stress."
+        }
+      ]
     });
   }
 

@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Flower, Flame, Layers, LogOut, User } from "lucide-react";
+import { Menu, X, ChevronDown, Flower, Flame, Layers, LogOut, User, Shield, Settings, LayoutDashboard } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
@@ -32,6 +33,7 @@ export default function Navbar() {
   useEffect(() => {
     setMobileMenuOpen(false);
     setMegaMenuOpen(false);
+    setAvatarMenuOpen(false);
   }, [pathname]);
 
   const navLinks = [
@@ -195,27 +197,146 @@ export default function Navbar() {
           {/* Desktop Right Action */}
           <div className="hidden md:flex items-center gap-4">
             {isLoggedIn ? (
-              <>
-                {session?.user?.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name || "User Avatar"}
-                    className="w-8 h-8 rounded-full object-cover border border-accent-gold/45 shadow-sm"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full border border-primary-sage/35 flex items-center justify-center bg-secondary-cream text-primary-sage shrink-0">
-                    <User size={14} />
-                  </div>
+              <div className="flex items-center gap-4 relative">
+                {/* Admin Mode Switcher Toggle */}
+                {session?.user?.role === "ADMIN" && (
+                  <Link
+                    href={pathname.startsWith("/admin") ? "/dashboard" : "/admin"}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold tracking-wider text-accent-gold hover:text-accent-gold/80 bg-accent-gold/10 hover:bg-accent-gold/15 rounded-full transition-all duration-300 border border-accent-gold/20"
+                    title={pathname.startsWith("/admin") ? "Switch to User Portal" : "Switch to Admin Portal"}
+                  >
+                    <Shield size={12} />
+                    <span>{pathname.startsWith("/admin") ? "User Portal" : "Admin View"}</span>
+                  </Link>
                 )}
+
+                {/* Avatar Menu Trigger Button */}
                 <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="text-xs font-bold uppercase tracking-widest text-[#2D3E35] border border-primary-forest/35 hover:bg-primary-forest hover:text-[#FCFCFA] px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5 cursor-pointer font-medium"
+                  onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                  className="flex items-center gap-1.5 focus:outline-none cursor-pointer group"
+                  aria-expanded={avatarMenuOpen}
+                  aria-haspopup="true"
                 >
-                  <LogOut size={12} />
-                  Log Out
+                  <div className="relative">
+                    {session?.user?.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={session.user.image}
+                        alt={session.user.name || "User Avatar"}
+                        className="w-8 h-8 rounded-full object-cover border border-accent-gold/45 group-hover:border-accent-gold transition-colors shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full border border-primary-sage/35 group-hover:border-primary-sage flex items-center justify-center bg-secondary-cream text-primary-sage shrink-0 transition-colors">
+                        <User size={14} />
+                      </div>
+                    )}
+                    {session?.user?.role === "ADMIN" && (
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-accent-gold border-2 border-background rounded-full flex items-center justify-center" title="Admin User">
+                        <span className="w-1 h-1 bg-white rounded-full" />
+                      </span>
+                    )}
+                  </div>
+                  <ChevronDown size={12} className={`text-foreground/60 group-hover:text-foreground transition-transform duration-200 ${avatarMenuOpen ? "rotate-180" : ""}`} />
                 </button>
-              </>
+
+                {/* Avatar Dropdown Menu */}
+                <AnimatePresence>
+                  {avatarMenuOpen && (
+                    <>
+                      {/* Invisible backdrop to close menu on click outside */}
+                      <div className="fixed inset-0 z-40" onClick={() => setAvatarMenuOpen(false)} />
+                      
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 w-56 glass-panel rounded-xl shadow-xl border border-primary-sage/10 p-2 z-50 flex flex-col gap-1 text-left gold-glow"
+                      >
+                        {/* Header User info */}
+                        <div className="px-3 py-2 border-b border-primary-sage/10 mb-1">
+                          <p className="text-xs font-bold text-primary-forest truncate">
+                            {session.user.name || "Seeker"}
+                          </p>
+                          <p className="text-[10px] text-foreground/60 truncate mt-0.5">
+                            {session.user.email}
+                          </p>
+                          {session.user.role === "ADMIN" && (
+                            <span className="inline-block mt-1 text-[8px] uppercase tracking-wider font-bold badge-gold px-2 py-0.5 rounded-full">
+                              Admin Role
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Profile Link */}
+                        <Link
+                          href="/profile"
+                          onClick={() => setAvatarMenuOpen(false)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-foreground/80 hover:text-primary-forest hover:bg-secondary-cream/50 transition-colors ${
+                            pathname === "/profile" ? "bg-secondary-cream text-primary-forest" : ""
+                          }`}
+                        >
+                          <User size={14} className="text-primary-sage" />
+                          <span>My Profile</span>
+                        </Link>
+
+                        {/* Dashboard Link */}
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setAvatarMenuOpen(false)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-foreground/80 hover:text-primary-forest hover:bg-secondary-cream/50 transition-colors ${
+                            pathname === "/dashboard" ? "bg-secondary-cream text-primary-forest" : ""
+                          }`}
+                        >
+                          <LayoutDashboard size={14} className="text-primary-sage" />
+                          <span>My Sanctuary</span>
+                        </Link>
+
+                        {/* Settings Link */}
+                        <Link
+                          href="/settings"
+                          onClick={() => setAvatarMenuOpen(false)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-foreground/80 hover:text-primary-forest hover:bg-secondary-cream/50 transition-colors ${
+                            pathname === "/settings" ? "bg-secondary-cream text-primary-forest" : ""
+                          }`}
+                        >
+                          <Settings size={14} className="text-primary-sage" />
+                          <span>Account Settings</span>
+                        </Link>
+
+                        {/* Admin Link if admin */}
+                        {session.user.role === "ADMIN" && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setAvatarMenuOpen(false)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-foreground/80 hover:text-primary-forest hover:bg-secondary-cream/50 transition-colors ${
+                              pathname.startsWith("/admin") ? "bg-secondary-cream text-primary-forest" : ""
+                            }`}
+                          >
+                            <Shield size={14} className="text-accent-gold" />
+                            <span>Admin CMS</span>
+                          </Link>
+                        )}
+
+                        {/* Divider */}
+                        <div className="h-px bg-primary-sage/10 my-1" />
+
+                        {/* Logout Trigger */}
+                        <button
+                          onClick={() => {
+                            setAvatarMenuOpen(false);
+                            signOut({ callbackUrl: "/" });
+                          }}
+                          className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-red-600 hover:bg-red-500/5 transition-colors cursor-pointer"
+                        >
+                          <LogOut size={14} className="text-red-500/80" />
+                          <span>Log Out</span>
+                        </button>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <>
                 <Link
@@ -302,13 +423,24 @@ export default function Navbar() {
                   Schedule Consultation
                 </Link>
                 {isLoggedIn ? (
-                  <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                    className="w-full text-center text-xs font-bold uppercase tracking-widest text-primary-forest border border-primary-forest/35 hover:bg-primary-forest hover:text-[#FCFCFA] py-3 rounded-full transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <LogOut size={12} />
-                    Log Out
-                  </button>
+                  <div className="flex flex-col gap-2 w-full">
+                    {session?.user?.role === "ADMIN" && (
+                      <Link
+                        href={pathname.startsWith("/admin") ? "/dashboard" : "/admin"}
+                        className="w-full text-center text-xs font-bold uppercase tracking-widest text-accent-gold border border-accent-gold/45 py-3 rounded-full transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <Shield size={12} />
+                        {pathname.startsWith("/admin") ? "User Portal" : "Admin Panel"}
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="w-full text-center text-xs font-bold uppercase tracking-widest text-primary-forest border border-primary-forest/35 hover:bg-primary-forest hover:text-[#FCFCFA] py-3 rounded-full transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <LogOut size={12} />
+                      Log Out
+                    </button>
+                  </div>
                 ) : (
                   <Link
                     href="/login"

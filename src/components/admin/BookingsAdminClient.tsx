@@ -569,7 +569,7 @@ export default function BookingsAdminClient({
                 <th className="py-4 px-6">Booking Status</th>
                 <th className="py-4 px-6">Attendance</th>
                 <th className="py-4 px-6">Admin Logs</th>
-                <th className="py-4 px-6 text-right">Actions</th>
+                <th className="py-4 px-6 text-right w-36">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-primary-sage/5 text-xs text-foreground/80">
@@ -671,65 +671,67 @@ export default function BookingsAdminClient({
                     </td>
 
                     {/* Action Controls */}
-                    <td className="py-4 px-6 text-right space-x-1.5 whitespace-nowrap">
-                      {/* Confirm quick control */}
-                      {booking.bookingStatus === "PENDING" && (
-                        <button
-                          onClick={() => handleQuickConfirm(booking.id)}
-                          className="p-1 rounded-full text-emerald-600 hover:bg-emerald-500/10 transition-colors cursor-pointer inline-flex items-center justify-center border border-emerald-500/10"
-                          title="Quick Confirm Booking"
-                        >
-                          <CheckCircle size={13} />
-                        </button>
-                      )}
-
-                      {/* Cancel quick control */}
-                      {booking.bookingStatus !== "CANCELLED" && booking.bookingStatus !== "COMPLETED" && (
-                        <button
-                          onClick={() => handleQuickCancel(booking.id)}
-                          className="p-1 rounded-full text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer inline-flex items-center justify-center border border-red-500/10"
-                          title="Quick Cancel Booking"
-                        >
-                          <XCircle size={13} />
-                        </button>
-                      )}
-
-                      {/* Attendance togglers (Only logical if confirmed or completed) */}
-                      {booking.bookingStatus !== "CANCELLED" && (
-                        <>
+                    <td className="py-3 px-6 text-right">
+                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                        {/* Confirm quick control */}
+                        {booking.bookingStatus === "PENDING" && (
                           <button
-                            onClick={() => handleQuickAttendance(booking.id, "PRESENT")}
-                            className={`p-1 rounded-full transition-colors cursor-pointer inline-flex items-center justify-center border ${
-                              booking.attendanceStatus === "PRESENT"
-                                ? "bg-green-500/15 text-green-700 border-green-500/30"
-                                : "text-foreground/45 hover:text-green-600 hover:bg-green-500/10 border-foreground/10"
-                            }`}
-                            title="Mark Attendance: PRESENT"
+                            onClick={() => handleQuickConfirm(booking.id)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-emerald-500/10 text-emerald-600 hover:bg-emerald-500/5 focus-visible:ring-1 focus-visible:ring-emerald-500 transition-all cursor-pointer"
+                            title="Quick Confirm Booking"
                           >
-                            <ClipboardCheck size={13} />
+                            <CheckCircle size={13} />
                           </button>
-                          <button
-                            onClick={() => handleQuickAttendance(booking.id, "ABSENT")}
-                            className={`p-1 rounded-full transition-colors cursor-pointer inline-flex items-center justify-center border ${
-                              booking.attendanceStatus === "ABSENT"
-                                ? "bg-rose-500/15 text-rose-700 border-rose-500/30"
-                                : "text-foreground/45 hover:text-rose-600 hover:bg-rose-500/10 border-foreground/10"
-                            }`}
-                            title="Mark Attendance: ABSENT"
-                          >
-                            <X size={13} />
-                          </button>
-                        </>
-                      )}
+                        )}
 
-                      {/* Open Full Edit Modal */}
-                      <button
-                        onClick={() => openEditModal(booking)}
-                        className="p-1 rounded-full text-foreground/50 hover:text-accent-gold hover:bg-accent-gold/10 border border-foreground/10 transition-colors cursor-pointer inline-flex items-center justify-center"
-                        title="Manage Notes & Complete Record"
-                      >
-                        <Edit2 size={13} />
-                      </button>
+                        {/* Cancel quick control */}
+                        {booking.bookingStatus !== "CANCELLED" && booking.bookingStatus !== "COMPLETED" && (
+                          <button
+                            onClick={() => handleQuickCancel(booking.id)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-red-500/10 text-red-500 hover:bg-red-500/5 focus-visible:ring-1 focus-visible:ring-red-500 transition-all cursor-pointer"
+                            title="Quick Cancel Booking"
+                          >
+                            <XCircle size={13} />
+                          </button>
+                        )}
+
+                        {/* Attendance togglers (Only logical if confirmed or completed) */}
+                        {booking.bookingStatus !== "CANCELLED" && (
+                          <>
+                            <button
+                              onClick={() => handleQuickAttendance(booking.id, "PRESENT")}
+                              className={`w-7 h-7 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
+                                booking.attendanceStatus === "PRESENT"
+                                  ? "bg-green-500/10 border-green-500/20 text-green-700"
+                                  : "border-primary-sage/10 text-foreground/50 hover:text-green-600 hover:bg-green-500/5"
+                              }`}
+                              title="Mark Attendance: PRESENT"
+                            >
+                              <ClipboardCheck size={13} />
+                            </button>
+                            <button
+                              onClick={() => handleQuickAttendance(booking.id, "ABSENT")}
+                              className={`w-7 h-7 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
+                                booking.attendanceStatus === "ABSENT"
+                                  ? "bg-rose-500/10 border-rose-500/20 text-rose-700"
+                                  : "border-primary-sage/10 text-foreground/50 hover:text-rose-600 hover:bg-rose-500/5"
+                              }`}
+                              title="Mark Attendance: ABSENT"
+                            >
+                               <X size={13} />
+                            </button>
+                          </>
+                        )}
+
+                        {/* Open Full Edit Modal */}
+                        <button
+                          onClick={() => openEditModal(booking)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-primary-sage/10 text-foreground/50 hover:text-accent-gold hover:bg-accent-gold/5 focus-visible:ring-1 focus-visible:ring-accent-gold transition-all cursor-pointer"
+                          title="Manage Notes & Complete Record"
+                        >
+                          <Edit2 size={13} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

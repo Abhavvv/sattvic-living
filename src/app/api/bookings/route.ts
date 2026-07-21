@@ -22,6 +22,16 @@ export async function GET(req: Request) {
     }
 
     const userId = session.user.id;
+    const dbUser = await db.user.findUnique({
+      where: { id: userId },
+    });
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: "Your session is invalid (User not found). Please log out and log back in." },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type"); // "upcoming", "past", "cancelled", or "all"
 
@@ -82,6 +92,16 @@ export async function POST(req: Request) {
     }
 
     const user = session.user;
+    const dbUser = await db.user.findUnique({
+      where: { id: user.id },
+    });
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: "Your session is invalid (User not found). Please log out and log back in." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const result = bookingCreateSchema.safeParse(body);
 

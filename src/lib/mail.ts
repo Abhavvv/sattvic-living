@@ -162,3 +162,129 @@ export async function sendVerificationEmail(email: string, token: string) {
     };
   }
 }
+
+/**
+ * Transmits an order status update email to the user's inbox.
+ * Gracefully falls back to terminal console logs if configuration is absent or fails.
+ */
+export async function sendOrderStatusEmail(
+  email: string,
+  orderNumber: string,
+  status: string,
+  itemsListHtml: string,
+  totalAmount: number
+) {
+  // Check if SMTP settings are missing or contain placeholder values
+  const isMocked =
+    !host ||
+    !user ||
+    !pass ||
+    user === "your_smtp_username_here" ||
+    pass === "your_smtp_password_here";
+
+  let subject = `Sattvic Living Order Update: ${orderNumber}`;
+  let headline = "";
+  let bodyText = "";
+
+  switch (status) {
+    case "PENDING":
+      subject = `Order Placed - ${orderNumber} | Sattvic Living`;
+      headline = "Thank you for your order!";
+      bodyText = "We have received your request for our prana-rich Ayurvedic menu. Here are the particulars of your order. We will verify availability and confirm your delivery details shortly.";
+      break;
+    case "CONFIRMED":
+      subject = `Order Confirmed - ${orderNumber} | Sattvic Living`;
+      headline = "Your order is confirmed!";
+      bodyText = "Our kitchen has verified your order, and we are preparing to source the freshest organic ingredients.";
+      break;
+    case "PREPARING":
+      subject = `Order Preparing - ${orderNumber} | Sattvic Living`;
+      headline = "We are preparing your meal!";
+      bodyText = "Our chefs are currently preparing your Ayurvedic dishes with conscious intent and balancing spices.";
+      break;
+    case "OUT_FOR_DELIVERY":
+      subject = `Out for Delivery - ${orderNumber} | Sattvic Living`;
+      headline = "Your meal is on its way!";
+      bodyText = "Your high-prana organic food has been packed into insulated containers and is now out for delivery.";
+      break;
+    case "DELIVERED":
+      subject = `Order Delivered - ${orderNumber} | Sattvic Living`;
+      headline = "Your meal has been delivered!";
+      bodyText = "Namaste, your order has been successfully delivered. We hope these pure dishes support your health and spiritual vitality.";
+      break;
+    case "CANCELLED":
+      subject = `Order Cancelled - ${orderNumber} | Sattvic Living`;
+      headline = "Your order has been cancelled";
+      bodyText = "We are writing to confirm that your order has been cancelled. If you did not initiate this change or need assistance, please reply to this email.";
+      break;
+  }
+
+  const trackingLink = `${appUrl}/dashboard/orders`;
+
+  if (isMocked) {
+    console.log("\n========================================================");
+    console.log(`📨 [SATTVIC LIVING] ORDER STATUS EMAIL MOCK LOG`);
+    console.log(`To:           ${email}`);
+    console.log(`Order No:     ${orderNumber}`);
+    console.log(`New Status:   ${status}`);
+    console.log(`Total:        $${totalAmount.toFixed(2)}`);
+    console.log(`Reason:       SMTP configuration parameters are missing or set to defaults.`);
+    console.log("========================================================\n");
+    return {
+      success: true,
+      mocked: true,
+      warning: "SMTP settings are unconfigured. The order update has been logged to your server terminal console.",
+    };
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: {
+        user,
+        pass,
+      },
+      connectionTimeout: 5000,
+      socketTimeout: 5000,
+    });
+
+    await transporter.sendMail({
+      from: `"Sattvic Living Kitchen" <${from}>`,
+      to: email,
+      subject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #FCFCFA;">
+          <h2 style="color: #355E3B; font-family: serif; font-size: 24px; border-bottom: 1px solid #8DAA91; padding-bottom: 10px; margin-top: 0;">SATTVIC LIVING</h2>
+          <p style="font-size: 16px; color: #2D3E35; font-weight: bold; margin-top: 20px;">${headline}</p>
+          <p style="font-size: 14px; color: #2D3E35; line-height: 1.6; opacity: 0.9;">${bodyText}</p>
+          
+          <div style="margin: 20px 0; padding: 15px; border: 1px solid #8DAA91; border-radius: 8px; background-color: #F8F4EC;">
+            <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: bold; color: #355E3B;">ORDER SUMMARY: ${orderNumber}</p>
+            <div style="font-size: 12px; color: #2D3E35; line-height: 1.6;">
+              ${itemsListHtml}
+            </div>
+            <p style="margin: 10px 0 0 0; font-size: 13px; font-weight: bold; text-align: right; color: #355E3B;">Total Amount: $${totalAmount.toFixed(2)}</p>
+          </div>
+
+          <div style="margin: 25px 0; text-align: center;">
+            <a href="${trackingLink}" style="background-color: #355E3B; color: #FCFCFA; text-decoration: none; padding: 12px 24px; border-radius: 50px; font-weight: bold; font-size: 13px; letter-spacing: 1px; display: inline-block; text-transform: uppercase;">Track Order History</a>
+          </div>
+          
+          <hr style="border: 0; border-top: 1px solid #8DAA91; margin: 20px 0; opacity: 0.2;" />
+          <p style="font-size: 12px; color: #8DAA91; text-align: center; margin-bottom: 0;">With mindfulness, <br/> The Sattvic Living Kitchen Team</p>
+        </div>
+      `,
+    });
+
+    return { success: true, mocked: false };
+  } catch (error) {
+    console.error("❌ SMTP connection failure while sending order status email:", error);
+    return {
+      success: true,
+      mocked: true,
+      warning: `SMTP connection failed: ${(error as Error).message}. logged to server terminal.`,
+    };
+  }
+}
